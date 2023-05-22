@@ -31,6 +31,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseAdapter;
 
+import java.awt.event.MouseMotionAdapter;
+import java.awt.Cursor;
+import java.awt.Toolkit;
+import java.awt.Point;
+
 public class GraphicUserInterfacePanel extends JPanel implements ItemListener, ActionListener{
     private LanguageDatabase languageDatabase;
     private GridBagConstraints gridConstraints;
@@ -45,6 +50,7 @@ public class GraphicUserInterfacePanel extends JPanel implements ItemListener, A
     private Node startPoint, endPoint;
     private Color startPointClr, endPointClr;
     private UserPoint drawPoints;
+    private Cursor defaultCursor, ableCursor, unableCursor;
 
     public GraphicUserInterfacePanel(){
         setLanguage(); //set default language
@@ -105,7 +111,8 @@ public class GraphicUserInterfacePanel extends JPanel implements ItemListener, A
         gridConstraints.weightx = 0.5; //element weight on x-axis
         add(informationLabel, gridConstraints);
     }
-
+    
+    @SuppressWarnings("unchecked")
     private void createComboBox(){
         languageOptions = new JComboBox(languageDatabase.getAvailableLanguage());
         languageOptions.setSelectedIndex(0); //set as default
@@ -129,7 +136,20 @@ public class GraphicUserInterfacePanel extends JPanel implements ItemListener, A
         gridConstraints.weighty = 1; //element weight on y-axis
         gridConstraints.insets = new Insets(10, 10, 0, 10); //top, left, bottom, right
         
+        createCursor();
         insertImageLabel();
+    }
+
+    private void createCursor(){
+        Point point = new Point(0, 0);
+        Toolkit tkit = Toolkit.getDefaultToolkit();
+        Image cursorImg = tkit.getImage("cursor.jpg");
+        Image cursorImg2 = tkit.getImage("cursor2.jpg");
+        Cursor cursorAble = tkit.createCustomCursor(cursorImg, point, "curseSir");
+        Cursor cursorUnable = tkit.createCustomCursor(cursorImg2, point, "curseSir2");
+        this.defaultCursor = this.getCursor();
+        this.ableCursor = cursorAble;
+        this.unableCursor = cursorUnable;
     }
 
     private void insertImageLabel(){
@@ -155,6 +175,14 @@ public class GraphicUserInterfacePanel extends JPanel implements ItemListener, A
                         initImage(0);
                     }
                 }
+            }
+        });
+        userImageLabel.addMouseMotionListener(new MouseMotionAdapter(){
+            public void mouseMoved(MouseEvent me){
+                if(getClickCount() == 1)
+                    changeCursor(1, me.getX(), me.getY());
+                else
+                    changeCursor(0, 0, 0);
             }
         });
 
@@ -207,6 +235,7 @@ public class GraphicUserInterfacePanel extends JPanel implements ItemListener, A
             clickCount = 0;
             startPoint = null;
             endPoint = null;
+            changeCursor(0, 0, 0);
             temporaryImage = new BufferedImage(bufferedUserImage.getWidth(), bufferedUserImage.getHeight(), bufferedUserImage.getType());
             Graphics canvas = temporaryImage.getGraphics();
             canvas.drawImage(bufferedUserImage, 0, 0, null);
@@ -289,6 +318,27 @@ public class GraphicUserInterfacePanel extends JPanel implements ItemListener, A
             errorDetected("noRoute");
             initImage(0);
         }
+    }
+
+    private void changeCursor(int mode, int x, int y){
+        if(mode == 1){//after first click
+            try{
+            x -= (userImageLabel.getWidth() - temporaryImage.getWidth())/ 2;
+            y -= (userImageLabel.getHeight() - temporaryImage.getHeight()) / 2;
+            Color mousePointerColor = new Color(temporaryImage.getRGB(x, y));
+            if(checkSimilarColor(startPointClr, mousePointerColor) && isInImg(x, y))
+                userImageLabel.setCursor(ableCursor);
+            else
+                userImageLabel.setCursor(unableCursor);
+            }catch(ArrayIndexOutOfBoundsException e){
+                //
+            }
+        }else//reset or after second click
+            userImageLabel.setCursor(defaultCursor);
+    }
+
+    private boolean isInImg(int x, int y){
+        return (x >= 0 && x < temporaryImage.getWidth() && y >= 0 && y < temporaryImage.getHeight()) ? true : false;
     }
 
     private void saveImage(){
