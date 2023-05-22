@@ -86,11 +86,14 @@ public class Algorithm{
             visitedList.add(currentNode);
             nodeList.remove(currentNode);
 
-            if(row - 1 >= 0) checkNode(node[col][row - 1]); //upper
-            if(col + 1 < maxCol) checkNode(node[col + 1][row]); //right
-            if(row + 1 < maxRow) checkNode(node[col][row + 1]); //down
-            if(col - 1 >= 0) checkNode(node[col - 1][row]); //left
-            
+            if(col - 1 >= 0) checkNode(node[col - 1][row]); //up
+            if(row + 1 < maxRow && col - 1 >= 0) checkNode(node[col - 1][row + 1]); //upper-right
+            if(row + 1 < maxRow) checkNode(node[col][row + 1]); //right
+            if(row + 1 < maxRow && col + 1 < maxCol) checkNode(node[col + 1][row + 1]); //lower-right
+            if(col + 1 < maxCol) checkNode(node[col + 1][row]); //down
+            if(row - 1 >= 0 && col + 1 < maxCol) checkNode(node[col + 1][row - 1]); //lower-left
+            if(row - 1 >= 0) checkNode(node[col][row - 1]); //left
+            if(row - 1 >= 0 && col - 1 >= 0) checkNode(node[col - 1][row - 1]); //upper-left
 
             int bestNodeIndex = 0;
             int bestNodeFCost = Integer.MAX_VALUE;
@@ -118,7 +121,7 @@ public class Algorithm{
             backtrack();
             for(int y = 0; y < maxCol; y++){
                 for(int x = 0; x < maxRow; x++){
-                    if(node[y][x].getPathNode()) imageArray[y][x] = 2;  
+                    if(node[y][x].getPathNode()) imageArray[y][x] = 2;
                 }
             }
         }

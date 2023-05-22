@@ -17,7 +17,7 @@ public class ImageToArray{
 
     private boolean checkSimilarColor(Color x){
         double distance = Math.pow((color.getRed() - x.getRed()), 2) + Math.pow(color.getGreen() - x.getGreen(), 2) + Math.pow(color.getBlue() - x.getBlue(), 2);
-        if (distance <= 10) return true;
+        if (distance <= 20) return true;
         return false;
     }
 
